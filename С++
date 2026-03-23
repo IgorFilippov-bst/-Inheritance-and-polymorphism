@@ -1,0 +1,166 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+// ============================================
+// Base abstract class: Volunteer
+// ============================================
+
+class Volunteer {
+protected:
+    string name;
+    int age;
+    string direction;
+    int hoursWorked;
+
+public:
+    // Constructor
+    Volunteer(string n, int a, string d, int h) {
+        name = n;
+        age = a;
+        direction = d;
+        hoursWorked = h;
+    }
+
+    // Virtual destructor
+    virtual ~Volunteer() {
+        cout << "Volunteer " << name << " removed." << endl;
+    }
+
+    // Common method
+    void addHours(int h) {
+        hoursWorked += h;
+    }
+
+    // Pure virtual methods
+    virtual double calcContribution() = 0;
+    virtual bool canParticipate(int requiredAge) = 0;
+
+    // Virtual method for printing info
+    virtual void printInfo() {
+        cout << "-----------------------------" << endl;
+        cout << "Name: " << name << endl;
+        cout << "Age: " << age << endl;
+        cout << "Direction: " << direction << endl;
+        cout << "Hours worked: " << hoursWorked << endl;
+    }
+};
+
+// ============================================
+// Derived class: EventVolunteer
+// ============================================
+
+class EventVolunteer : public Volunteer {
+private:
+    string eventName;
+    string role; // organizer / assistant
+
+public:
+    EventVolunteer(string n, int a, string d, int h,
+                   string eventN, string r)
+        : Volunteer(n, a, d, h) {
+        eventName = eventN;
+        role = r;
+    }
+
+    // Calculate bonus hours
+    int calcBonusHours() {
+        if (role == "organizer") return 20;
+        else return 10;
+    }
+
+    double calcContribution() override {
+        return hoursWorked + calcBonusHours();
+    }
+
+    bool canParticipate(int requiredAge) override {
+        return age >= requiredAge;
+    }
+
+    void printInfo() override {
+        Volunteer::printInfo();
+        cout << "Event: " << eventName << endl;
+        cout << "Role: " << role << endl;
+        cout << "Bonus hours: " << calcBonusHours() << endl;
+    }
+};
+
+// ============================================
+// Derived class: RegularVolunteer
+// ============================================
+
+class RegularVolunteer : public Volunteer {
+private:
+    string schedule;
+    string specialization;
+
+public:
+    RegularVolunteer(string n, int a, string d, int h,
+                     string s, string spec)
+        : Volunteer(n, a, d, h) {
+        schedule = s;
+        specialization = spec;
+    }
+
+    // Planned monthly hours
+    int calcPlannedHours() {
+        if (schedule == "daily") return 160;
+        else return 80;
+    }
+
+    double calcContribution() override {
+        return hoursWorked + calcPlannedHours() * 0.5;
+    }
+
+    bool canParticipate(int requiredAge) override {
+        return age >= requiredAge;
+    }
+
+    void printInfo() override {
+        Volunteer::printInfo();
+        cout << "Schedule: " << schedule << endl;
+        cout << "Specialization: " << specialization << endl;
+        cout << "Planned hours: " << calcPlannedHours() << endl;
+    }
+};
+
+// ============================================
+// main()
+// ============================================
+
+int main() {
+    const int N = 4;
+    Volunteer* volunteers[N];
+
+    // Creating objects
+    volunteers[0] = new EventVolunteer("Ivan Ivanov", 20, "ecology", 50, "Cleanup Day", "organizer");
+    volunteers[1] = new RegularVolunteer("Petr Petrov", 17, "social help", 30, "daily", "medic");
+    volunteers[2] = new EventVolunteer("Anna Sidorova", 22, "culture", 40, "Festival", "assistant");
+    volunteers[3] = new RegularVolunteer("Alexey Kozlov", 19, "sport", 60, "weekends", "trainer");
+
+    // Polymorphic output
+    cout << "\n--- Volunteers Info ---\n" << endl;
+    for (int i = 0; i < N; i++) {
+        volunteers[i]->printInfo();
+        cout << endl;
+    }
+
+    // Contribution calculation
+    cout << "\n--- Contribution ---\n" << endl;
+    for (int i = 0; i < N; i++) {
+        cout << "Contribution: " << volunteers[i]->calcContribution() << endl;
+    }
+
+    // Participation check
+    cout << "\n--- Participation check (18+) ---\n" << endl;
+    for (int i = 0; i < N; i++) {
+        cout << (volunteers[i]->canParticipate(18) ? "Allowed" : "Not allowed") << endl;
+    }
+
+    // Free memory
+    for (int i = 0; i < N; i++) {
+        delete volunteers[i];
+    }
+
+    return 0;
+}
